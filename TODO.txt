@@ -1,0 +1,4 @@
+TODO
+
+- add a gun powerup that allows the user to destroy the falling blocks
+- add different backgrounds after the user reaches a certain score
