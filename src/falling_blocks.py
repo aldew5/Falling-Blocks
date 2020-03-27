@@ -10,8 +10,10 @@ boulderimg = pygame.image.load('finalboulder.png')
 snowballimg = pygame.image.load("betterball.png")
 rockimg = pygame.image.load("bestrock.png")
 heartimg = pygame.image.load("resizedheart.png")
+gunimg = pygame.image.load("bestgun.png")
 bg = pygame.image.load("background.jpg")
 char = pygame.image.load('standing.png')
+side_gun = pygame.image.load('better_small.png')
 walkRight = [pygame.image.load('R1.png'), pygame.image.load('R2.png'), pygame.image.load('R3.png'), pygame.image.load('R4.png'), pygame.image.load('R5.png'), pygame.image.load('R6.png'), pygame.image.load('R7.png'), pygame.image.load('R8.png'), pygame.image.load('R9.png')]
 walkLeft = [pygame.image.load('L1.png'), pygame.image.load('L2.png'), pygame.image.load('L3.png'), pygame.image.load('L4.png'), pygame.image.load('L5.png'), pygame.image.load('L6.png'), pygame.image.load('L7.png'), pygame.image.load('L8.png'), pygame.image.load('L9.png')]
 
@@ -32,6 +34,7 @@ class Character(object):
         self.health = 10
         self.hitbox = (self.x + 17, self.y + 11, 29, 52)
         self.alive = True
+        self.shooting = False
 
     def draw(self, win):
         if self.alive:
@@ -63,6 +66,11 @@ class Character(object):
             pygame.draw.rect(win, (255,0,0), (self.hitbox[0], self.hitbox[1] - 20, 50, 10))
             pygame.draw.rect(win, (0,128,0), (self.hitbox[0], self.hitbox[1] - 20, 50 - ( 5* (10-self.health)), 10))
 
+            # gun
+            if self.shooting:
+                win.blit(side_gun, (self.x + 20, self.y + 40))
+                
+
             # circle at start of rect
             # pygame.draw.circle(win, (255,0,0), (self.hitbox[0], self.hitbox[1]), 20)
         else:
@@ -70,6 +78,7 @@ class Character(object):
             font = pygame.font.SysFont('comicsans', 30, True)
             over = font.render('GAME OVER', 1, (0,0,0))
             win.blit(over, (290, 350))
+
             
 
 # abstract block class
@@ -133,15 +142,13 @@ class Boulder(Block):
         self.hitbox = (self.x, self.y - 5, 135, 135)
         #pygame.draw.rect(win, (255,0,0), self.hitbox, 2)
 
-class Heart(object):
+class Powerup(object):
     def __init__(self, x):
         self.x = x
         self.y = 635
-        self.increase = 1
-        self.image = heartimg
+        self.image = None
         self.time = 270
         self.appear = True
-        self.hitbox = (self.x, self.y, 30, 30)
 
     def draw(self, win):
         if self.appear:
@@ -149,13 +156,51 @@ class Heart(object):
                 win.blit(self.image, (self.x, self.y))
             else:
                 self.appear = False
-        
             self.time -= 1
-            self.hitbox = (self.x, self.y, 30, 30)
-            #pygame.draw.rect(win, (255,0,0), self.hitbox, 2)
-    
-                 
 
+class Heart(Powerup):
+    def __init__(self, x):
+        Powerup.__init__(self, x)
+        self.increase = 1
+        self.image = heartimg
+        self.id = "heart"
+        self.hitbox = (self.x, self.y, 30, 30)
+
+    def draw(self, win):
+        Powerup.draw(self, win)
+        
+        self.hitbox = (self.x, self.y, 30, 30)
+        #pygame.draw.rect(win, (255,0,0), self.hitbox, 2)
+
+class Gun(Powerup):
+    def __init__(self, x):
+        Powerup.__init__(self, x)
+        self.image = gunimg
+        self.id = "gun"
+        self.hitbox = (self.x, self.y, 30, 30)
+
+    def draw(self, win):
+        Powerup.draw(self, win)
+            
+        self.hitbox = (self.x, self.y, 30, 30)
+        #pygame.draw.rect(win, (255,0,0), self.hitbox, 2)
+
+class Bullet(object):
+    def __init__(self, x, y):
+        self.x = x
+        self.y = y
+        self.hitbox = (self.x, self.y, 30, 30)
+        self.appear = True
+        self.v = 8
+
+    def draw(self, win):
+        if self.appear:
+            pygame.draw.circle(win, (0,0,0), (self.x, self.y), 7)
+
+            self.hitbox = (self.x - 10, self.y - 10, 20, 20)
+            #pygame.draw.rect(win, (255,0,0), self.hitbox, 2)
+            
+                        
 def drawWindow():
     win.blit(bg, (0,0))
     man.draw(win)
@@ -166,6 +211,8 @@ def drawWindow():
             o.draw(win)
         for p in powerups:
             p.draw(win)
+        for b in bullets:
+            b.draw(win)
 
         # displaying score
         font = pygame.font.SysFont('comicsans', 30, True)
@@ -183,13 +230,13 @@ def drawWindow():
                          
 
 man = Character(300, 600, 64, 64)
-heart = Heart(400)
+gun = Gun(400)
+print(type(man))
 
-
-
-objects, powerups = [], []               
+objects, powerups, bullets = [], [gun] , []              
 run, hit = True, False
 max_length, rounds, score, cooldown, interval = 0, 0, 0, 0, 27
+shoot_cooldown, shoot_time = 0, 0
 while run and man.alive:
     # set fps
     clock.tick(27)
@@ -220,7 +267,29 @@ while run and man.alive:
     else:
         man.standing = True
         man.walkCount = 0
+    
+    #shooting controls
+    if man.shooting and keys[pygame.K_SPACE] and len(bullets) <= 5 and shoot_cooldown >= 10:
+        shoot_cooldown = 0
+        new_bullet = Bullet(man.x + 30, man.y)
+        bullets.append(new_bullet)
 
+    # change bullet position or delete them
+    for bullet in bullets:
+        if bullet.y > 0:
+            bullet.y -= bullet.v
+        else:
+            bullets.pop(bullets.index(bullet))
+
+    # check for bullet collisions
+    for bullet in bullets:
+        for o in objects:
+            if bullet.x >= o.hitbox[0] and bullet.x <= o.hitbox[0] + o.hitbox[2]:
+                # check the y
+                if bullet.y >= o.hitbox[1] and bullet.y <= o.hitbox[1] + o.hitbox[3]:
+                    objects.pop(objects.index(o))
+                    bullets.pop(bullets.index(bullet))
+                
     #check rocks
     for o in objects:
         if o.falling == False:
@@ -275,26 +344,40 @@ while run and man.alive:
 
 
     # generate new powerups
-    x = random.randint(1, 50)
+    x = random.randint(1, 100)
     if score > 50 and x == 25 and len(powerups) == 0:
+        choice = random.randint(1, 100)
         xpos = random.randint(0,700)
-        newheart = Heart(xpos)
-        powerups.append(newheart)
+        if choice >= 50:
+            newheart = Heart(xpos)
+            powerups.append(newheart)
+        else:
+            newgun = Gun(xpos)
+            powerups.append(newgun)
 
     # check for picking up powerup
     for p in powerups:
         if center_x >= p.hitbox[0] and center_x <= p.hitbox[0] + p.hitbox[2]:
             # check the y
             if center_y >= p.hitbox[1] and center_y <= p.hitbox[1] + p.hitbox[3]:
-                if man.health < 10:
-                    man.health += 1
+                if p.id == "heart":
+                    if man.health < 10:
+                        man.health += 1
+                elif p.id == "gun":
+                    man.shooting = True
+                    # reset the shoot time
+                    shoot_time = 135
 
+                # picked up an powerup
                 p.appear = False
-                
+
+    # check for the gun being use up
+    if shoot_time == 0:
+        man.shooting = False
+              
     # draw the scene
     drawWindow()
 
-    
     # increment the cooldown by a tenth of the score after 10 objects
     # so that difficulty increases over time
     if score < 10:
@@ -302,14 +385,18 @@ while run and man.alive:
     else:
         cooldown += int(score * 0.1)
 
-    rounds += 1
-
     # add to the amount of allowed objects as time goes on
-    if rounds == 100 and max_length <= 15:
+    if rounds == 100 and max_length <= 10:
         max_length += 1
         rounds = 0
-    interval += 1
 
+    # increment varaibles
+    interval += 1
+    shoot_cooldown += 1
+    shoot_time -= 1
+    rounds += 1
+
+# print higscores
 highscores = open('highscores.txt', 'r')
 top = int(highscores.read())
 print("Current highscore is ", top)
@@ -322,6 +409,7 @@ if score > top:
 hs.close()
 
 run = True
+# game over screen
 while run and not(man.alive):
 
     # screen being closed
