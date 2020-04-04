@@ -428,13 +428,17 @@ while run and man.alive:
     shoot_time -= 1
     rounds += 1
 
+rel_path = r"C:\Users\Owner\Desktop\Falling-Blocks\Textfiles"
+script_dir = os.path.dirname("Textfiles")
+abs_file_path = os.path.join(script_dir, rel_path)
+
 # print higscores
-highscores = open('highscores.txt', 'r')
+highscores = open(abs_file_path + r'\highscores.txt', 'r')
 top = int(highscores.read())
 print("Current highscore is ", top)
 highscores.close()
 
-hs = open('highscores.txt', 'w')
+hs = open(abs_file_path + r'\highscores.txt', 'w')
 if score > top:
     print("Congratulations! You have the new highscore")
     hs.write(str(score))
