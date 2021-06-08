@@ -2,6 +2,7 @@ import pygame
 import random
 import os
 
+# init pygame
 pygame.init()
 
 win = pygame.display.set_mode((700, 700))
