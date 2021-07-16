@@ -1,5 +1,5 @@
 # Falling-Blocks
-A game where the user dodges falling stuff
+A game where the user dodges falling stuff.
 
 # Instructions
 Run the *falling_blocks.py* file if you are not on a mac and *falling_blocks_mac.py" otherwise. Control the character with the arrow keys. The objective is to dodge the falling objects and survive as long as you can to increase your score.
