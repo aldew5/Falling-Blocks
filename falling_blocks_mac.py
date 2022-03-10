@@ -202,7 +202,6 @@ class Heart(Powerup):
         Powerup.draw(self, win)
         
         self.hitbox = (self.x, self.y, 30, 30)
-        #pygame.draw.rect(win, (255,0,0), self.hitbox, 2)
 
 class Gun(Powerup):
     def __init__(self, x):
@@ -215,8 +214,7 @@ class Gun(Powerup):
         Powerup.draw(self, win)
             
         self.hitbox = (self.x, self.y, 30, 30)
-        #pygame.draw.rect(win, (255,0,0), self.hitbox, 2)
-
+    
 class Bullet(object):
     def __init__(self, x, y):
         self.x = x
@@ -230,9 +228,7 @@ class Bullet(object):
             pygame.draw.circle(win, (0,0,0), (self.x, self.y), 7)
 
             self.hitbox = (self.x - 10, self.y - 10, 20, 20)
-            #pygame.draw.rect(win, (255,0,0), self.hitbox, 2)
-            
-                        
+                                  
 def drawWindow():
     win.blit(bg, (0,0))
     man.draw(win)
@@ -263,7 +259,6 @@ def drawWindow():
 
 man = Character(300, 600, 64, 64)
 gun = Gun(400)
-print(type(man))
 
 objects, powerups, bullets = [], [gun] , []              
 run, hit = True, False
@@ -345,14 +340,12 @@ while run and man.alive:
                     if man.health - 2 <= 0:
                         man.alive = False
                     else:
-                        print("HIT")
                         r.falling = False
                         man.health -= 2
                 # not a boulder       
                 elif man.health - 1 == 0:
                         man.alive = False
                 else:
-                    print('hit')
                     r.falling = False
                     man.health -= 1
 
