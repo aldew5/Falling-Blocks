@@ -12,4 +12,4 @@ Replace the rel_path variables in the game script with your directory path so th
 This project is an adaption of a tutorial series created by Tech With Tim that you can find here: https://www.youtube.com/watch?v=i6xMBig-pP4&list=PLzMcBGfZo4-lp3jAExUCewBfMx3UZFkh5
 
 # Requirements
-You must have pygame installed to run the application.
+You must have pygame installed to run the application. You can install it with `pip install pygame`.
